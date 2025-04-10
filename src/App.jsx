@@ -9,6 +9,7 @@ import SignupPage from "./Components/SignupPage";
 import Dashboard from "./pages/home/CV/Dashboard";
 import UserJobsPage from "./pages/home/jobs/UserJobsPage";
 import JobDetail from "./pages/home/jobs/JobDetail";
+import './index.css'
 
 // CV Components
 import SelectTemplate from "./pages/home/CV/SelectTemplate";
