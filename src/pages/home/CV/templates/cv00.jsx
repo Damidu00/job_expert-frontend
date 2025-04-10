@@ -81,11 +81,11 @@ export default function CV() {
 
   return (
     <div className="bg-white min-h-screen flex justify-center items-start pt-10">
-      <div className="w-[210mm] relative">
+      <div className="w-[210mm] ">
         {/* 🔵 Download Button */}
         <button
           onClick={handleDownloadPDF}
-          className="absolute top-0 right-0 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded shadow-md transition"
+          className="absolute top-10 right-10 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded shadow-md transition"
         >
           Download CV
         </button>
