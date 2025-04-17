@@ -1,7 +1,19 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FaPhone, FaEnvelope, FaGithub, FaLinkedin, FaMapMarkerAlt } from 'react-icons/fa';
+import {
+  FaUserCircle,
+  FaPhone,
+  FaEnvelope,
+  FaGithub,
+  FaLinkedin,
+  FaMapMarkerAlt,
+  FaTasks,
+  FaBook,
+  FaBriefcase,
+  FaProjectDiagram,
+  FaUserCheck,
+} from 'react-icons/fa';
 
 export default function Cv01() {
   const location = useLocation();
@@ -91,35 +103,41 @@ export default function Cv01() {
         <div className="w-2/5 pr-4 bg-gray-100 p-4 rounded-lg">
           {/* About Me */}
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-gray-800">About Me</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaUserCircle className="mr-2 text-black" /> About Me
+            </h2>
             <p className="text-sm text-gray-600">{user.shortBio}</p>
           </div>
 
           {/* Contact */}
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Contact</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaUserCheck className="mr-2 text-black" /> Contact
+            </h2>
             <ul className="space-y-1 text-sm text-gray-700">
               <li className="flex items-center">
-                <FaPhone className="mr-2 text-blue-600" /> {user.phone}
+                <FaPhone className="mr-2 text-black" /> {user.phone}
               </li>
               <li className="flex items-center">
-                <FaEnvelope className="mr-2 text-blue-600" /> {user.email}
+                <FaEnvelope className="mr-2 text-black" /> {user.email}
               </li>
               <li className="flex items-center">
-                <FaGithub className="mr-2 text-blue-600" /> {user.githubURL || "N/A"}
+                <FaGithub className="mr-2 text-black" /> {user.githubURL || "Not available"}
               </li>
               <li className="flex items-center">
-                <FaLinkedin className="mr-2 text-blue-600" /> {user.linkedinURL || "N/A"}
+                <FaLinkedin className="mr-2 text-black" /> {user.linkedinURL || "Not available"}
               </li>
               <li className="flex items-center">
-                <FaMapMarkerAlt className="mr-2 text-blue-600" /> {user.Address}
+                <FaMapMarkerAlt className="mr-2 text-black" /> {user.Address}
               </li>
             </ul>
           </div>
 
           {/* Skills */}
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Skills</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaTasks className="mr-2 text-black" /> Skills
+            </h2>
             {skills.map((skill) => (
               <div key={skill._id} className="mt-2">
                 <h3 className="text-base font-semibold text-gray-700">{skill.category}</h3>
@@ -134,7 +152,9 @@ export default function Cv01() {
 
           {/* Referees */}
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Referees</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaUserCheck className="mr-2 text-black" /> Referees
+            </h2>
             {referees.map((referee) => (
               <div key={referee._id} className="mt-2">
                 <h3 className="text-base font-semibold text-gray-700">{`${referee.FirstName} ${referee.LastName}`}</h3>
@@ -150,7 +170,9 @@ export default function Cv01() {
         <div className="w-3/5 pl-4">
           {/* Education */}
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Education</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaBook className="mr-2 text-black" /> Education
+            </h2>
             {education.map((edu) => (
               <div key={edu._id} className="mt-2">
                 <h3 className="text-base font-semibold text-gray-700">{edu.degree}</h3>
@@ -165,14 +187,19 @@ export default function Cv01() {
 
           {/* Experience */}
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Experience</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaBriefcase className="mr-2 text-black" /> Experience
+            </h2>
             {experience.map((exp) => (
               <div key={exp._id} className="mt-2">
                 <h3 className="text-base font-semibold text-gray-700">{exp.jobTitle}</h3>
                 <p className="text-sm text-gray-600">
+                  {/* Date Range */}                  
                   <strong>{exp.company}</strong>
-                  <br />
-                  {exp.startDate.slice(0, 10)} - {exp.endDate.slice(0, 10)}
+                  {" "}
+                  <span className="text-[13px]">
+                    ({exp.startDate.slice(0, 10)} - {exp.endDate ? exp.endDate.slice(0, 10) : "Present"})
+                  </span>
                   <br />
                   {exp.description}
                 </p>
@@ -182,7 +209,9 @@ export default function Cv01() {
 
           {/* Projects */}
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Projects</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+              <FaProjectDiagram className="mr-2 text-black" /> Projects
+            </h2>
             {projects.map((project) => (
               <div key={project._id} className="mt-2">
                 <h3 className="text-base font-semibold text-gray-700">{project.title}</h3>
