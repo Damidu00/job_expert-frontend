@@ -52,6 +52,7 @@ export default function Cv01() {
         const experience = experienceRes.data.experiences || [];
         const projects = projectsRes.data.projects || [];
         const referees = refereesRes.data.referees || [];
+        console.log(referees)
 
         setCvData({
           user,
@@ -160,6 +161,9 @@ export default function Cv01() {
                 <h3 className="text-base font-semibold text-gray-700">{`${referee.FirstName} ${referee.LastName}`}</h3>
                 <p className="text-sm text-gray-600">
                   <strong>{referee.position}</strong> - {referee.workingPlace}
+                </p>
+                <p className='text-[13px] font-gray-400'>
+                {referee.phone}
                 </p>
               </div>
             ))}
