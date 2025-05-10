@@ -4,6 +4,13 @@ import { AiOutlineMail } from 'react-icons/ai';
 import { FiEdit } from 'react-icons/fi';
 import { BsFillTelephoneFill } from 'react-icons/bs';
 import UpdateProfile from './updateprofile';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import { Typography } from "@mui/material";
+
 
 const Profile = () => {
   const [user, setUser] = useState(null); // State to store user data
@@ -35,12 +42,55 @@ const Profile = () => {
     fetchUser();
   }, []);
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete('http://localhost:5000/api/users/delete', {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+
+      localStorage.removeItem('access_token');
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Error deleting account:', error.response?.data?.message || error.message);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (!user) return <p>Error fetching user data.</p>;
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg my-5 p-8">
+    <div
+      className="min-h-screen p-4"
+      style={{
+        backgroundImage: "url('https://news.wovns.com/wp-content/uploads/2016/07/Screen-Shot-2016-07-11-at-2.23.15-PM.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg my-5 p-8 relative">
+        {/* Edit and Delete Buttons */}
+        <div className="absolute bottom-4 right-4 flex gap-4">
+          <button
+            onClick={() => setOpen(true)} // Open the dialog
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-xl flex items-center gap-2"
+          >
+            Edit
+          </button>
+          <button
+            onClick={handleDeleteAccount}
+            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl flex items-center gap-2 font-semibold"
+          >
+            Delete Account
+          </button>
+        </div>
+
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             {/* Profile Photo */}
@@ -52,34 +102,27 @@ const Profile = () => {
               />
             </div>
             <div>
-              <h1 className="text-2 font-bold">{user.fullname}</h1>
+              <h1 className="text-2xl font-bold">{user.fullname}</h1>
               <p className="text-gray-600">{user.profile.bio || 'No bio available'}</p>
             </div>
           </div>
-
-          <button
-            onClick={() => setOpen(true)}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full flex items-center gap-2 mt-4 sm:mt-0"
-          >
-            <FiEdit size={20} /> Edit
-          </button>
         </div>
 
         {/* Contact Information */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
-            <AiOutlineMail size={20} className="text-gray-500" />
+            <AiOutlineMail size={20} className="text-blue-500" />
             <span className="text-gray-600">{user.email}</span>
           </div>
           <div className="flex items-center gap-3">
-            <BsFillTelephoneFill size={20} className="text-gray-500" />
+            <BsFillTelephoneFill size={20} className="text-blue-500" />
             <span className="text-gray-600">{user.phoneNumber}</span>
           </div>
         </div>
 
         {/* Skills */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">Skills</h2>
+          <h2 className="text-lg font-bold">Skills</h2>
           <div className="flex flex-wrap gap-2 mt-2">
             {user.profile.skills?.length > 0 ? (
               user.profile.skills.map((skill, index) => (
@@ -98,7 +141,7 @@ const Profile = () => {
 
         {/* Resume */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold">Resume</h2>
+          <h2 className="text-lg font-bold">Resume</h2>
           {user.profile.resume ? (
             <a
               href={user.profile.resume}
@@ -153,33 +196,39 @@ const Profile = () => {
       </div>
 
       {/* Update Profile Dialog */}
-      {open && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-1 rounded-lg shadow-md w-full max-w-lg relative">
-            <button
-              onClick={() => setOpen(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+          Update Profile
+        </DialogTitle>
+        <DialogContent>
+          <UpdateProfile 
+            setOpen={setOpen} 
+            currentUser={user}
+            onUpdateSuccess={() => {
+              // Refresh user data after update
+              const fetchUser = async () => {
+                try {
+                  const token = localStorage.getItem('access_token');
+                  if (!token) {
+                    console.error('No authentication token found.');
+                    return;
+                  }
 
-            <UpdateProfile setOpen={setOpen} />
-          </div>
-        </div>
-      )}
+                  const response = await axios.get('http://localhost:5000/api/users/currentuser', {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                  });
+
+                  setUser(response.data);
+                } catch (error) {
+                  console.error('Error fetching user:', error.response?.data?.message || error.message);
+                }
+              };
+              fetchUser();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
