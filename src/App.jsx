@@ -9,6 +9,7 @@ import SignupPage from "./Components/SignupPage";
 import Dashboard from "./pages/home/CV/Dashboard";
 import UserJobsPage from "./pages/home/jobs/UserJobsPage";
 import JobDetail from "./pages/home/jobs/JobDetail";
+import './index.css'
 
 // CV Components
 import SelectTemplate from "./pages/home/CV/SelectTemplate";
@@ -24,6 +25,7 @@ import Cv00 from "./pages/home/CV/templates/cv00";
 import Cv01 from "./pages/home/CV/templates/cv01";
 import Cv02 from "./pages/home/CV/templates/cv02";
 import Profile from './Components/profile';
+import UserDetails from "./pages/admin/userDetails";
 
 function App() {
   return (
@@ -34,7 +36,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path='/profile' element={<Profile />} />
-
+          <Route path="/userDetails" element={<UserDetails/>}/>
           
           {/* Protected Routes */}
           <Route
