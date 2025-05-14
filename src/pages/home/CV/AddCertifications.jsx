@@ -1,19 +1,24 @@
-import axios from 'axios';
-import React, { useState } from 'react';
-import Swal from 'sweetalert2'; // Import SweetAlert2
-import { CiCirclePlus } from 'react-icons/ci';
-import { useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2"; // Import SweetAlert2
+import { CiCirclePlus } from "react-icons/ci";
+import { useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
-export default function AddCertifications({ onClose }) {
-  const location = useLocation()
-  let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
+export default function AddCertifications({ onClose ,cvData}) {
+  const location = useLocation();
+  let user = JSON.parse(localStorage.getItem("user")); // Convert string to object
   const userId = user ? user._id : null; // Now we can access _id
   console.log("userId -> " + userId);
   const [formFields, setFormFields] = useState([
-    { instituteName: '', certificateName: '', Link: '' },
+    { instituteName: "", certificateName: "", Link: "" },
   ]);
-
+  useEffect(() => {
+    if (cvData && Array.isArray(cvData.certificates)) {
+      setFormFields(cvData.certificates);
+    }
+  }, [cvData]);
+  
   // Handle form field changes
   const handleFormChange = (event, index) => {
     const data = [...formFields];
@@ -23,7 +28,10 @@ export default function AddCertifications({ onClose }) {
 
   // Add a new certification field
   const addFields = () => {
-    setFormFields([...formFields, { instituteName: '', certificateName: '', Link: '' }]);
+    setFormFields([
+      ...formFields,
+      { instituteName: "", certificateName: "", Link: "" },
+    ]);
   };
 
   // Handle form submission
@@ -31,22 +39,25 @@ export default function AddCertifications({ onClose }) {
     e.preventDefault();
 
     const postData = {
-      userId,
-      cvId: 'cv02',
       certificates: formFields,
     };
 
     console.log(postData);
 
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/certificates/`, postData);
+      await axios.put(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/cvuser/updateCertification/${localStorage.getItem("cvUserId")}`,
+        postData
+      );
 
-      toast.success("Certificate Details added")
+      toast.success("Certificate details added");
 
       onClose(); // Close the dialog after successful submission
     } catch (error) {
-      console.error('Error:', error);
-      toast.error("Failed to add certificate details")
+      console.error("Error:", error);
+      toast.error("Failed to add certificate details");
     }
   };
 
@@ -100,7 +111,6 @@ export default function AddCertifications({ onClose }) {
 
       {/* Action Buttons */}
       <div className="flex justify-end space-x-4">
-
         <button
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
