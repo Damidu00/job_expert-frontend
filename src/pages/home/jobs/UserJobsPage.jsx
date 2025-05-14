@@ -94,7 +94,7 @@ const UserJobsPage = () => {
     setSearchTerm('');
   };
 
-  // Get unique values for filters
+  //  Get unique values for filters
   const jobTypes = [...new Set(jobs.filter(job => job?.jobType).map(job => job.jobType))];
   const experienceLevels = [...new Set(jobs.filter(job => job?.experienceLevel).map(job => job.experienceLevel))];
 

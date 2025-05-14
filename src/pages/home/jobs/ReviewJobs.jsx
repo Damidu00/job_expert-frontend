@@ -18,7 +18,7 @@ export default function ReviewJobs() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in and is admin
+    // Check if  user is logged in and is admin
     const checkAdminStatus = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/users/profile', {
