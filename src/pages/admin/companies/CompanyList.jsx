@@ -13,8 +13,11 @@ import {
   FaMapMarkerAlt, 
   FaEnvelope, 
   FaPhone, 
-  FaIndustry 
+  FaIndustry,
+  FaFilePdf
 } from 'react-icons/fa';
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function CompanyList() {
@@ -148,6 +151,83 @@ export default function CompanyList() {
     return searchMatch && industryMatch;
   });
 
+  const generateCompanyReport = () => {
+    try {
+      // Check if we have companies to report
+      if (!filteredCompanies || filteredCompanies.length === 0) {
+        toast.error('No companies available to generate report');
+        return;
+      }
+
+      // Create new document
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(16);
+      doc.text('Companies Report', 15, 15);
+      
+      // Add metadata
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 25);
+      doc.text(`Total Companies: ${filteredCompanies.length}`, 15, 30);
+
+      // Prepare table data
+      const tableData = filteredCompanies.map(company => [
+        company?.name || 'N/A',
+        company?.industry || 'N/A',
+        company?.location || 'N/A',
+        company?.contactEmail || 'N/A',
+        company?.contactPhone || 'N/A',
+        (company?.website || 'N/A').toString()
+      ]);
+
+      // Generate table using autoTable
+      autoTable(doc, {
+        startY: 35,
+        head: [['Company Name', 'Industry', 'Location', 'Email', 'Phone', 'Website']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [63, 81, 181],
+          textColor: 255,
+          fontSize: 10
+        },
+        bodyStyles: {
+          fontSize: 9
+        },
+        margin: { top: 35 },
+        didDrawPage: function(data) {
+          // Add page number
+          const pageSize = doc.internal.pageSize;
+          const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+          doc.text(`Page ${data.pageCount}`, data.settings.margin.left, pageHeight - 10);
+        }
+      });
+
+      // Save the PDF
+      const fileName = `Companies_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      toast.success('Report generated successfully!');
+
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast.error('Failed to generate report: ' + error.message);
+    }
+  };
+
+  // Add a loading state for the report generation
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+  // Updated button click handler
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    try {
+      await generateCompanyReport();
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   // If not authenticated or not admin, don't render anything
   if (!isAuthenticated() || !isAdmin()) {
     return null;
@@ -159,6 +239,20 @@ export default function CompanyList() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
         <div className="flex flex-col sm:flex-row gap-2">
+          {/* Updated report button with loading state */}
+          <button
+            onClick={handleGenerateReport}
+            disabled={isGeneratingReport}
+            className={`flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors ${
+              isGeneratingReport ? 'opacity-75 cursor-not-allowed' : ''
+            }`}
+            title="Generate PDF Report"
+          >
+            <FaFilePdf className="text-lg" />
+            <span>
+              {isGeneratingReport ? 'Generating...' : 'Generate Report'}
+            </span>
+          </button>
           <div className="relative">
             <input
               type="text"
