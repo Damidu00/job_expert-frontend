@@ -171,7 +171,7 @@ export default function CompanyList() {
       doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 25);
       doc.text(`Total Companies: ${filteredCompanies.length}`, 15, 30);
 
-      // Prepare table data
+      // Prepare table details
       const tableData = filteredCompanies.map(company => [
         company?.name || 'N/A',
         company?.industry || 'N/A',
