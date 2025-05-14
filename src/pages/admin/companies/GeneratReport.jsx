@@ -6,6 +6,7 @@ const generateReport = () => {
     const tableColumn = ["Name", "Industry", "Location", "Email", "Phone", "Website"];
     const tableRows = [];
   
+    //filtering companies details 
     filteredCompanies.forEach(company => {
       const row = [
         company.name || "N/A",
