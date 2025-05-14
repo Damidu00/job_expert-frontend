@@ -2,40 +2,35 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaFilter, FaBriefcase, FaMapMarkerAlt, FaRegCalendarAlt, FaBuilding } from 'react-icons/fa';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import {
+  FaEdit, FaTrash, FaPlus, FaSearch, FaFilter, FaBriefcase,
+  FaMapMarkerAlt, FaRegCalendarAlt, FaDownload
+} from 'react-icons/fa';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function JobList() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    status: '',
-    jobType: '',
-  });
+  const [filters, setFilters] = useState({ status: '', jobType: '' });
   const [showFilters, setShowFilters] = useState(false);
   const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const cancelSourceRef = useRef(null);
+  const reportRef = useRef(null); // 👈 For capturing the report section
 
-  // Create a new cancel token source
   const createCancelToken = () => {
-    // Cancel any existing requests
-    if (cancelSourceRef.current) {
-      cancelSourceRef.current.cancel("New request initiated");
-    }
-    
-    // Create a new cancel token source
+    if (cancelSourceRef.current) cancelSourceRef.current.cancel("New request initiated");
     cancelSourceRef.current = axios.CancelToken.source();
     return cancelSourceRef.current;
   };
 
   useEffect(() => {
-    // Create a cancel token source
     const source = createCancelToken();
-    
     const loadJobs = async () => {
-      // Only fetch jobs if the user is authenticated and is an admin
       if (isAuthenticated() && isAdmin()) {
         try {
           setLoading(true);
@@ -44,17 +39,8 @@ export default function JobList() {
             cancelToken: source.token
           });
           setJobs(response.data);
-        } catch (error) { 
-          // Ignore canceled requests and  401 errors during logout
-          if (axios.isCancel(error)) {
-            console.log('Request canceled:', error.message);
-          } else if (error.response && error.response.status === 401) {
-            // Don't log during unmount - it might be a logout
-            if (isAuthenticated()) {
-              console.log('User not authenticated, redirecting to login...');
-            }
-            // Let the AuthContext interceptor handle the redirect
-          } else {
+        } catch (error) {
+          if (!axios.isCancel(error) && (!error.response || error.response.status !== 401)) {
             console.error('Error fetching jobs:', error);
             toast.error('Failed to fetch jobs. Please try again.');
           }
@@ -62,46 +48,25 @@ export default function JobList() {
           setLoading(false);
         }
       } else {
-        // If not authenticated or not admin, don't try to fetch
         setLoading(false);
       }
     };
-
     loadJobs();
-
-    // Clean up function to cancel pending requests when component unmounts or dependencies change
-    return () => {
-      if (source) {
-        source.cancel('Component unmounted or dependencies changed');
-      }
-    };
+    return () => source.cancel('Component unmounted or dependencies changed');
   }, [isAuthenticated, isAdmin]);
 
   const handleDeleteJob = async (jobId) => {
     if (window.confirm('Are you sure you want to delete this job?')) {
       try {
-        // Create a cancel token for this operation
         const source = createCancelToken();
-        
-        await axios.delete(`http://localhost:5000/api/jobs/delete/${jobId}`, {
+        await axios.delete(http://localhost:5000/api/jobs/delete/${jobId}, {
           withCredentials: true,
           cancelToken: source.token
         });
         toast.success('Job deleted successfully');
-        
-        // Instead of making a new request, update the local state
         setJobs(prevJobs => prevJobs.filter(job => job._id !== jobId));
       } catch (error) {
-        // Only show error toast if the error is not a 401 (Unauthorized) or canceled
-        if (axios.isCancel(error)) {
-          console.log('Delete request canceled:', error.message);
-        } else if (error.response && error.response.status === 401) {
-          // Don't log during unmount - it might be a logout
-          if (isAuthenticated()) {
-            console.log('User not authenticated, redirecting to login...');
-          }
-          // Let the AuthContext interceptor handle the redirect
-        } else {
+        if (!axios.isCancel(error) && (!error.response || error.response.status !== 401)) {
           console.error('Error deleting job:', error);
           toast.error('Failed to delete job. Please try again.');
         }
@@ -115,26 +80,79 @@ export default function JobList() {
   };
 
   const resetFilters = () => {
-    setFilters({
-      status: '',
-      jobType: '',
-    });
+    setFilters({ status: '', jobType: '' });
     setSearchTerm('');
   };
 
+  const generateReport = () => {
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const margin = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+  
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Job Listings Report', margin, 50);
+  
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80);
+    doc.text(Generated on: ${new Date().toLocaleString()}, margin, 70);
+  
+    // Table data
+    const headers = [['Title', 'Company', 'Location', 'Type', 'Status', 'Deadline', 'Positions']];
+    const data = filteredJobs.map(job => [
+      job.title,
+      job.company?.name || 'N/A',
+      job.location || 'Remote',
+      job.jobType || 'N/A',
+      job.status,
+      job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString() : 'No deadline',
+      ${job.positionsFilled || 0}/${job.numberOfPositions}
+    ]);
+  
+    // AutoTable
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: data,
+      theme: 'grid',
+      styles: {
+        fontSize: 10,
+        cellPadding: 6,
+      },
+      headStyles: {
+        fillColor: [33, 37, 41], // dark gray
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250],
+      },
+      margin: { left: margin, right: margin },
+      didDrawPage: function (data) {
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.setTextColor(150);
+        doc.text(Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}, pageWidth - margin, doc.internal.pageSize.getHeight() - 20, { align: 'right' });
+      },
+    });
+  
+    doc.save('JobReport.pdf');
+  };
+  
+
   const filteredJobs = jobs.filter(job => {
-    // Apply text search
     const searchMatch = !searchTerm || 
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (job.description && job.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (job.company?.name && job.company.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    // Apply status filter
+
     const statusMatch = !filters.status || job.status === filters.status;
-    
-    // Apply job type filter
     const jobTypeMatch = !filters.jobType || job.jobType === filters.jobType;
-    
+
     return searchMatch && statusMatch && jobTypeMatch;
   });
 
@@ -147,14 +165,10 @@ export default function JobList() {
     }
   };
 
-  // If not authenticated or not admin, don't render anything
-  if (!isAuthenticated() || !isAdmin()) {
-    return null;
-  }
+  if (!isAuthenticated() || !isAdmin()) return null;
 
   return (
     <div className="space-y-6">
-      {/* Header and Actions */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Job Listings</h1>
         <div className="flex flex-col sm:flex-row gap-2">
@@ -175,6 +189,13 @@ export default function JobList() {
             <FaFilter className="text-gray-500" />
             <span>Filters</span>
           </button>
+          <button
+            onClick={generateReport}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <FaDownload />
+            <span>Download Report</span>
+          </button>
           <Link 
             to="/admin/jobs/add" 
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -185,7 +206,6 @@ export default function JobList() {
         </div>
       </div>
 
-      {/* Filters */}
       {showFilters && (
         <div className="bg-white p-4 rounded-lg shadow border">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -195,7 +215,7 @@ export default function JobList() {
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               >
                 <option value="">All Statuses</option>
                 <option value="Pending">Pending</option>
@@ -231,7 +251,6 @@ export default function JobList() {
         </div>
       )}
 
-      {/* Loading and Empty State */}
       {loading ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -265,14 +284,13 @@ export default function JobList() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div ref={reportRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredJobs.map((job) => (
             <div key={job._id} className="bg-white rounded-lg shadow overflow-hidden flex flex-col">
-              {/* Card Header */}
               <div className="p-4 bg-gradient-to-r from-indigo-500 to-indigo-600">
                 <div className="flex justify-between items-start">
                   <h3 className="text-lg font-bold text-white truncate">{job.title}</h3>
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status)}`}>
+                  <span className={px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status)}}>
                     {job.status}
                   </span>
                 </div>
@@ -280,8 +298,6 @@ export default function JobList() {
                   {job.company?.name || 'No company assigned'}
                 </div>
               </div>
-              
-              {/* Card Body */}
               <div className="p-4 flex-grow">
                 <div className="space-y-2">
                   <div className="flex items-center text-sm">
@@ -301,27 +317,23 @@ export default function JobList() {
                     </span>
                   </div>
                 </div>
-                
                 <div className="px-4 py-3 border-t border-gray-200">
                   <div className="flex items-center justify-between text-sm">
                     <div className="text-gray-700">
                       <strong>Positions:</strong> {job.positionsFilled || 0}/{job.numberOfPositions}
                     </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${job.positionsFilled >= job.numberOfPositions ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-700'}`}>
+                    <div className={px-2 py-1 rounded-full text-xs font-medium ${job.positionsFilled >= job.numberOfPositions ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-700'}}>
                       {job.positionsFilled >= job.numberOfPositions ? 'Filled' : 'Open'}
                     </div>
                   </div>
                 </div>
-                
                 <div className="mt-4 text-sm text-gray-600 line-clamp-2">
                   {job.description || 'No description provided.'}
                 </div>
               </div>
-              
-              {/* Card Footer */}
               <div className="px-4 py-3 bg-gray-50 flex justify-end space-x-3 border-t">
                 <Link 
-                  to={`/admin/jobs/edit/${job._id}`} 
+                  to={/admin/jobs/edit/${job._id}} 
                   className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-full transition-colors"
                   title="Edit Job"
                 >
@@ -341,4 +353,4 @@ export default function JobList() {
       )}
     </div>
   );
-} 
+}
