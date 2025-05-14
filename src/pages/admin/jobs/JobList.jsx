@@ -44,8 +44,8 @@ export default function JobList() {
             cancelToken: source.token
           });
           setJobs(response.data);
-        } catch (error) {
-          // Ignore canceled requests and 401 errors during logout
+        } catch (error) { 
+          // Ignore canceled requests and  401 errors during logout
           if (axios.isCancel(error)) {
             console.log('Request canceled:', error.message);
           } else if (error.response && error.response.status === 401) {
