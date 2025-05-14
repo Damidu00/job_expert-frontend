@@ -1,62 +1,76 @@
-import axios from 'axios';
-import React, { useState } from 'react';
-import toast from 'react-hot-toast'; // Import React Hot Toast
-import { CiCirclePlus } from 'react-icons/ci';
-import { useLocation } from 'react-router-dom';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast"; // Import React Hot Toast
+import { CiCirclePlus } from "react-icons/ci";
+import { useLocation } from "react-router-dom";
 
-export default function AddSkills({ onClose }) {
+export default function AddSkills({ onClose,cvData }) {
   const location = useLocation();
-  let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
+  let user = JSON.parse(localStorage.getItem("user")); // Convert string to object
   const userId = user ? user._id : null; // Now we can access _id
   console.log("userId -> " + userId);
-  const [formFields, setFormFields] = useState([{ category: '', items: '' }]);
-
+  const [formFields, setFormFields] = useState([{ category: "", items: "" }]);
+  const cvUserId = localStorage.getItem("cvUserId");
   const handleFormChange = (event, index) => {
     const data = [...formFields];
     data[index][event.target.name] = event.target.value;
     setFormFields(data);
   };
-
+  useEffect(() => {
+    if (cvData && Array.isArray(cvData.skills)) {
+      setFormFields(cvData.skills);
+    }
+  }, [cvData]);
   const addFields = () => {
-    setFormFields([...formFields, { category: '', items: '' }]);
+    setFormFields([...formFields, { category: "", items: "" }]);
   };
 
   const validateInput = () => {
     for (let field of formFields) {
       if (!field.category.trim()) {
-        toast.error('Category is required!');
+        toast.error("Category is required!");
         return false;
       }
       if (!/^[a-zA-Z ]+$/.test(field.category)) {
-        toast.error('Category should contain only letters and spaces!');
+        toast.error("Category should contain only letters and spaces!");
         return false;
       }
       if (!field.items.trim()) {
-        toast.error('Skills (items) are required!');
+        toast.error("Skills (items) are required!");
         return false;
       }
-
     }
     return true;
   };
 
+  console.log(cvUserId)
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateInput()) return;
-
+ // Retrieve user ID from localStorage
+    if (!cvUserId) {
+      toast.error("User ID is missing.");
+      return;
+    }
     const postData = {
-      userId,
-      cvId: 'cv02',
       skills: formFields,
     };
 
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/skills/`, postData);
-      toast.success('Skills added successfully!');
+      // Send PUT request to update skills
+      const response = await axios.put(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/cvuser/createDetails/${cvUserId}`,
+        postData
+      );
+
+      toast.success("Skills added successfully!");
       onClose();
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Failed to add skills. Please try again.');
+      console.error("Error:", error);
+      toast.error("Failed to add skills. Please try again.");
     }
   };
 
@@ -105,4 +119,3 @@ export default function AddSkills({ onClose }) {
     </form>
   );
 }
-

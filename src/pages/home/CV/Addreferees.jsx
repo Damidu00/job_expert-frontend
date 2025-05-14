@@ -1,9 +1,9 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
 
-export default function AddReferees({ onClose }) {
+export default function AddReferees({ onClose ,cvData}) {
   const location = useLocation();
   let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
   const userId = user?. _id || null; // Optional chaining prevents errors
@@ -19,7 +19,11 @@ export default function AddReferees({ onClose }) {
     updatedReferees[index][field] = value;
     setReferees(updatedReferees);
   };
-
+  useEffect(() => {
+    if (cvData && Array.isArray(cvData.referees) && cvData.referees.length > 0) {
+      setReferees(cvData.referees);
+    }
+  }, [cvData]);
   const isValidPhone = (phone) => /^\d{10}$/.test(phone); // 10-digit validation
 
   const handleSubmit = async (e) => {
@@ -32,19 +36,17 @@ export default function AddReferees({ onClose }) {
       }
     }
 
+    const cvUserId = localStorage.getItem("cvUserId"); // or get it from props/state/context
     const payload = {
-      userId,
-      cvId: "cv02", 
       referees
     };
-
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/referees/`, payload);
-      toast.success("Referee Details Added");
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/cvuser/updateReference/${cvUserId}`, payload);
+      toast.success("Referee Details Updated");
       onClose(); // Close the dialog after successful submission
     } catch (error) {
-      console.error('Error submitting referees:', error);
-      toast.error("Failed to add referee details");
+      console.error('Error updating referees:', error);
+      toast.error("Failed to update referee details");
     }
   };
 

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { CiCirclePlus } from 'react-icons/ci';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast'; // Import react-hot-toast
 
-export default function AddProjects({ onClose }) {
+export default function AddProjects({ onClose,cvData }) {
   const location = useLocation();
   let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
   const userId = user ? user._id : null; // Now we can access _id
@@ -35,34 +35,37 @@ export default function AddProjects({ onClose }) {
       { title: '', description: '', githubLink: '', liveDemo: '', techStack: '' },
     ]);
   };
+  useEffect(() => {
+    if (cvData && Array.isArray(cvData.projects) && cvData.projects.length > 0) {
+      setProjects(cvData.projects);
+    }
+  }, [cvData]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const cvUserId = localStorage.getItem("cvUserId");
     const postData = {
-      userId,
-      cvId: 'cv02',
       projects: projects,
     };
 
-    try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/projects/`, postData);
+    
+  try {
+    await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/cvuser/updateProjects/${cvUserId}`, postData);
 
-      // Use react-hot-toast for success message
-      toast.success('Projects added successfully!', {
-        duration: 4000,
-      });
+    toast.success('Projects added successfully!', {
+      duration: 4000,
+    });
 
-      onClose(); // Close the dialog after successful submission
-    } catch (error) {
-      console.error('Error adding projects:', error.response ? error.response.data : error.message);
+    onClose(); // Close the dialog after successful submission
+  } catch (error) {
+    console.error('Error adding projects:', error.response ? error.response.data : error.message);
 
-      // Use react-hot-toast for error message
-      toast.error('Failed to add projects. Please try again.', {
-        duration: 4000,
-      });
-    }
+    toast.error('Failed to add projects. Please try again.', {
+      duration: 4000,
+    });
+  }
+
   };
 
   // Helper function to get ordinal numbers

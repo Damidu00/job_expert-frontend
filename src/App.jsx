@@ -29,7 +29,6 @@ import UserDetails from "./pages/admin/userDetails";
 import CV4 from "./pages/home/CV/templates/Cv004";
 import Cv005 from "./pages/home/CV/templates/Cv005";
 import Cv006 from "./pages/home/CV/templates/Cv006";
-
 import UserDetails from "./pages/admin/userDetails";
 
 

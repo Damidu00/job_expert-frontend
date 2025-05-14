@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { CiCirclePlus } from 'react-icons/ci';
 import { useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast'; // Import React Hot Toast
 
-export default function AddEducation({ onClose }) {
+export default function AddEducation({ onClose,cvData }) {
   const location = useLocation();
   let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
   const userId = user ? user._id : null; // Now we can access _id
@@ -12,7 +12,15 @@ export default function AddEducation({ onClose }) {
   const [education, setEducation] = useState([
     { eduLevel: '', school: '', degree: '', startDate: '', endDate: '', description: '', charCount: 0 },
   ]);
-
+  useEffect(() => {
+    if (cvData && Array.isArray(cvData.details)) {
+      const formattedEducation = cvData.details.map((item) => ({
+        ...item,
+        charCount: item.description?.length || 0,
+      }));
+      setEducation(formattedEducation);
+    }
+  }, [cvData]);
   // Handle input changes
   const handleFormChange = (event, index) => {
     const { name, value } = event.target;
@@ -48,17 +56,16 @@ export default function AddEducation({ onClose }) {
       return;
     }
 
-    const cvId = "cv02";
+
+    const cvUserId = localStorage.getItem("cvUserId"); // Make sure this is set during user creation
 
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/education/`, {
-        userId,
-        cvId,
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/cvuser/updateEducation/${cvUserId}`, {
         details: education,
       });
+  
       toast.success('Education details saved successfully!');
-
-      onClose(); 
+      onClose();
     } catch (error) {
       console.error('Error saving education details:', error);
       toast.error('Failed to save education details. Please try again.');

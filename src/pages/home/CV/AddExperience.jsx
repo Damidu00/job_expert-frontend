@@ -1,26 +1,30 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { CiCirclePlus } from 'react-icons/ci';
-import { useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { CiCirclePlus } from "react-icons/ci";
+import { useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
-export default function AddExperience({ onClose }) {
+export default function AddExperience({ onClose ,cvData}) {
   const location = useLocation();
-  let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
+  let user = JSON.parse(localStorage.getItem("user")); // Convert string to object
   const userId = user ? user._id : null; // Now we can access _id
   console.log("userId -> " + userId);
 
   // State variables for experience details
   const [experiences, setExperiences] = useState([
-    { company: '', jobTitle: '', startDate: '', endDate: '', description: '' },
+    { company: "", jobTitle: "", startDate: "", endDate: "", description: "" },
   ]);
-
+  useEffect(() => {
+    if (cvData && Array.isArray(cvData.experiences) && cvData.experiences.length > 0) {
+      setExperiences(cvData.experiences);
+    }
+  }, [cvData]);
   // Handle input changes
   const handleFormChange = (event, index) => {
     const { name, value } = event.target;
     const newExperiences = [...experiences];
 
-    if (name === 'description' && value.length > 250) {
+    if (name === "description" && value.length > 250) {
       return;
     }
 
@@ -32,37 +36,40 @@ export default function AddExperience({ onClose }) {
   const addFields = () => {
     setExperiences([
       ...experiences,
-      { company: '', jobTitle: '', startDate: '', endDate: '', description: '' },
+      {
+        company: "",
+        jobTitle: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+      },
     ]);
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const cvUserId = localStorage.getItem("cvUserId");
     const postData = {
-      userId,
-      cvId: "cv02",
       experiences: experiences,
     };
 
     try {
-      await axios
-        .post(`${import.meta.env.VITE_BACKEND_URL}/api/experience/`, postData)
-        .then((res) => {
-          console.log(res.data);
-          toast.success('Experience added successfully!'); // React hot toast success message
-        })
-        .catch((err) => {
-          toast.error('Error adding data. Please try again!'); // React hot toast error message
-        });
-
-      onClose(); // Close the dialog after successful submission
+      const res = await axios.put(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/cvuser/updateExperience/${cvUserId}`,
+        postData
+      );
+      console.log(res.data);
+      toast.success("Experience added successfully!");
+      onClose();
     } catch (error) {
-      console.error('Error adding experience:', error.response ? error.response.data : error.message);
-
-      // React hot toast error message
-      toast.error('Failed to add experience. Please try again.');
+      console.error(
+        "Error adding experience:",
+        error.response ? error.response.data : error.message
+      );
+      toast.error("Failed to add experience. Please try again.");
     }
   };
 
@@ -71,7 +78,9 @@ export default function AddExperience({ onClose }) {
       {/* Render experience fields */}
       {experiences.map((experience, index) => (
         <div key={index} className="border p-4 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">{index + 1} Experience Details</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            {index + 1} Experience Details
+          </h3>
           <input
             type="text"
             name="company"
@@ -120,7 +129,9 @@ export default function AddExperience({ onClose }) {
             value={experience.description}
             onChange={(event) => handleFormChange(event, index)}
           ></textarea>
-          <p className="text-sm text-gray-500">{experience.description.length}/250 characters</p>
+          <p className="text-sm text-gray-500">
+            {experience.description.length}/250 characters
+          </p>
         </div>
       ))}
 

@@ -10,6 +10,9 @@ import AddExperience from './AddExperience';
 import AddProjects from './AddProjects';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../../../Components/Navbar';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 export default function AddCVDetails() {
   const location = useLocation()
@@ -17,6 +20,8 @@ export default function AddCVDetails() {
   const userId = user ? user._id : null; // Now we can access _id
   console.log(userId);
   const navigate = useNavigate()
+  const { id } = useParams(); // Get the CV ID from the URL
+const [cvData, setCvData] = useState(null);
   // State to manage the visibility of the dialog and the current component to render
   const [openDialog, setOpenDialog] = useState(false);
   const [currentComponent, setCurrentComponent] = useState(null);
@@ -31,7 +36,19 @@ export default function AddCVDetails() {
     experience: false,
     projects: false,
   });
+  useEffect(() => {
+    if (id) {
 
+      axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/cvuser/getUsers/${id}`)
+        .then((res) => {
+          setCvData(res.data); // Save the fetched CV data
+          // Optionally pre-set completion statuses here if needed
+        })
+        .catch((err) => {
+          console.error('Error fetching CV data:', err);
+        });
+    }
+  }, [id]);
   // Function to open the dialog and set the component to render
   const handleOpenDialog = (componentName, component) => {
     setCurrentComponent({ name: componentName, component }); // Set the component and its name
@@ -57,8 +74,8 @@ export default function AddCVDetails() {
 
   return (
     <>
-    <Navbar/>
     <div className="p-8 bg-gray-100 min-h-screen">
+    <Navbar/>
       
       <h1 className="text-6xl font-bold text-center text-blue-600 mb-8">
         Build Your CV
@@ -67,7 +84,10 @@ export default function AddCVDetails() {
         {/* Add About Me */}
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
-          onClick={() => handleOpenDialog('aboutMe', <AddAboutMe onClose={() => handleCloseDialog('aboutMe')} />)}
+          onClick={() =>
+            handleOpenDialog('aboutMe', <AddAboutMe onClose={() => handleCloseDialog('aboutMe')} cvData={cvData} />)
+          }
+          
         >
           <span className="text-lg font-medium text-gray-700">Add About Me</span>
           {completionStatus.aboutMe ? (
@@ -80,7 +100,7 @@ export default function AddCVDetails() {
         {/* Add Skills */}
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
-          onClick={() => handleOpenDialog('skills', <AddSkills onClose={() => handleCloseDialog('skills')} />)}
+          onClick={() => handleOpenDialog('skills', <AddSkills onClose={() => handleCloseDialog('skills')} cvData={cvData} />)}
         >
           <span className="text-lg font-medium text-gray-700">Add Skills</span>
           {completionStatus.skills ? (
@@ -94,7 +114,7 @@ export default function AddCVDetails() {
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
           onClick={() =>
-            handleOpenDialog('certifications', <AddCertifications onClose={() => handleCloseDialog('certifications')} />)
+            handleOpenDialog('certifications', <AddCertifications onClose={() => handleCloseDialog('certifications') } cvData={cvData}/>)
           }
         >
           <span className="text-lg font-medium text-gray-700">Add Certificates</span>
@@ -108,7 +128,7 @@ export default function AddCVDetails() {
         {/* Add Referees */}
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
-          onClick={() => handleOpenDialog('referees', <AddReferees onClose={() => handleCloseDialog('referees')} />)}
+          onClick={() => handleOpenDialog('referees', <AddReferees onClose={() => handleCloseDialog('referees')}  cvData={cvData}/>)}
         >
           <span className="text-lg font-medium text-gray-700">Add Referees</span>
           {completionStatus.referees ? (
@@ -121,7 +141,7 @@ export default function AddCVDetails() {
         {/* Add Education */}
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
-          onClick={() => handleOpenDialog('education', <AddEducation onClose={() => handleCloseDialog('education')} />)}
+          onClick={() => handleOpenDialog('education', <AddEducation onClose={() => handleCloseDialog('education')}  cvData={cvData}/>)}
         >
           <span className="text-lg font-medium text-gray-700">Add Education</span>
           {completionStatus.education ? (
@@ -134,7 +154,7 @@ export default function AddCVDetails() {
         {/* Add Experiences */}
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
-          onClick={() => handleOpenDialog('experience', <AddExperience onClose={() => handleCloseDialog('experience')} />)}
+          onClick={() => handleOpenDialog('experience', <AddExperience onClose={() => handleCloseDialog('experience')}  cvData={cvData}/>)}
         >
           <span className="text-lg font-medium text-gray-700">Add Experiences</span>
           {completionStatus.experience ? (
@@ -147,7 +167,7 @@ export default function AddCVDetails() {
         {/* Add Projects */}
         <div
           className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300"
-          onClick={() => handleOpenDialog('projects', <AddProjects onClose={() => handleCloseDialog('projects')} />)}
+          onClick={() => handleOpenDialog('projects', <AddProjects onClose={() => handleCloseDialog('projects')}  cvData={cvData}/>)}
         >
           <span className="text-lg font-medium text-gray-700">Add Projects</span>
           {completionStatus.projects ? (
