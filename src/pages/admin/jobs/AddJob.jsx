@@ -11,7 +11,7 @@ export default function AddJob() {
     title: '',
     description: '',
     requirements: '',
-    salary: '',
+    salary: '', 
     location: '',
     jobType: 'Full-time',
     experienceLevel: 'Entry level',
@@ -81,7 +81,7 @@ export default function AddJob() {
       <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            {/* Job Title */}
+            {/* Job  Title */}
             <div className="sm:col-span-3">
               <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                 Job Title*
