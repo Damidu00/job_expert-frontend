@@ -157,7 +157,7 @@ const UpdateProfile = ({ setOpen, currentUser, onUpdateSuccess }) => {
       <TextField
         label="Bio"
         variant="outlined"
-        fullWidth
+        fullWidth 
         multiline
         rows={3}
         value={input.bio}
