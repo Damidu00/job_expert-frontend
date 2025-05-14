@@ -150,7 +150,7 @@ export default function CompanyList() {
     
     return searchMatch && industryMatch;
   });
-
+   //genarate company reprot ....
   const generateCompanyReport = () => {
     try {
       // Check if we have companies to report
