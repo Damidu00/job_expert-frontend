@@ -1,16 +1,15 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import fileUploadForSupaBase from "../../../utils/mediaUpload";
 
-export default function AddAboutMe({ onClose }) {
+export default function AddAboutMe({ onClose, cvData }) {
   const location = useLocation();
-  let user = JSON.parse(localStorage.getItem('user')); // Convert string to object
+  let user = JSON.parse(localStorage.getItem("user")); // Convert string to object
   const userId = user ? user._id : null; // Now we can access _id
   console.log("userId -> " + userId);
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,28 +19,27 @@ export default function AddAboutMe({ onClose }) {
   const [address, setAddress] = useState("");
   const [bio, setBio] = useState("");
   // const [image, setImage] = useState(null);
-  const [imageFiles,setImageFiles] = useState([])
+  const [imageFiles, setImageFiles] = useState([]);
 
-  const validateName = (value) => /^[a-zA-Z\s]+$/.test(value); 
+  const validateName = (value) => /^[a-zA-Z\s]+$/.test(value);
   const validatePhoneNumber = (value) => /^[0-9]{10,}$/.test(value);
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const validateUrl = (value) => /^(https?:\/\/[^\s]+)$/.test(value);
-
+  useEffect(() => {
+    if (cvData) {
+      setFirstName(cvData.firstName || "");
+      setLastName(cvData.lastName || "");
+      setEmail(cvData.email || "");
+      setPhoneNumber(cvData.phone || "");
+      setLinkedinUrl(cvData.linkedinURL || "");
+      setGithubUrl(cvData.githubURL || "");
+      setAddress(cvData.Address || "");
+      setBio(cvData.shortBio || "");
+      // You can optionally handle displaying the existing profilePhoto here
+    }
+  }, [cvData]);
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const promisesArray = []
-        
-        for(let i=0; i<imageFiles.length; i++){
-            promisesArray[i] = fileUploadForSupaBase(imageFiles[i])    
-        }
-        
-        const imgUrls = await Promise.all(promisesArray)
-        const profilePhotoURL = imgUrls[0]
-        console.log(profilePhotoURL)
-
-
-    
 
     if (!validateName(firstName) || !validateName(lastName)) {
       return toast.error("First and Last Name must contain only alphabets.");
@@ -58,48 +56,61 @@ export default function AddAboutMe({ onClose }) {
     if (githubUrl && !validateUrl(githubUrl)) {
       return toast.error("Invalid GitHub URL.");
     }
-    // if (image) {
-    //   const fileTypes = ["image/jpeg", "image/png", "image/jpg"];
-    //   if (!fileTypes.includes(image.type)) {
-    //     return toast.error("Profile photo must be a JPG or PNG file.");
-    //   }
-    //   if (image.size > 2 * 1024 * 1024) {
-    //     return toast.error("Profile photo must be under 2MB.");
-    //   }
-    // }
 
-    const details = {
-      userId,
-      cvId: "cv02",
-      firstName,
-      lastName,
-      email,
-      phone: phoneNumber,
-      linkedinURL: linkedinUrl,
-      githubURL: githubUrl,
-      Address: address,
-      shortBio: bio,
-      profilePhoto : profilePhotoURL
-    };
+    const formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("cvId", "cv02");
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("email", email);
+    formData.append("phone", phoneNumber);
+    formData.append("linkedinURL", linkedinUrl);
+    formData.append("githubURL", githubUrl);
+    formData.append("Address", address);
+    formData.append("shortBio", bio);
+    if (imageFiles.length > 0) {
+      formData.append("profilePhoto", imageFiles[0]);
+    }
 
     try {
-      await axios.post(import.meta.env.VITE_BACKEND_URL + `/api/cvuser/`, details)
-        .then((res) => {
-          onClose();
-          console.log(res.data)
-          toast.success("Your Details Added")
-        })
-        .catch(() => {
-          console.log(res.data)
-          toast.error("Error adding user details.");
-          
-        });
+      let res;
+
+      if (cvData && cvData._id) {
+        const cvUserId = localStorage.getItem("cvUserId");
+
+        res = await axios.put(
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/api/cvuser/updateUser/${cvUserId}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        toast.success("Your Details Updated");
+      } else {
+        res = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/cvuser/`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        localStorage.setItem("cvUserId", res.data.user._id);
+        toast.success("Your Details Added");
+      }
+
+      console.log(res.data);
+      onClose();
     } catch (error) {
-      console.error(error);
-      alert("Failed to add details. Please try again.");
+      console.error(error.response?.data || error.message);
+      toast.error("Error saving CV details.");
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -109,7 +120,9 @@ export default function AddAboutMe({ onClose }) {
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           required
           value={firstName}
-          onChange={(e) => validateName(e.target.value) && setFirstName(e.target.value)}
+          onChange={(e) =>
+            validateName(e.target.value) && setFirstName(e.target.value)
+          }
         />
         <input
           type="text"
@@ -117,7 +130,9 @@ export default function AddAboutMe({ onClose }) {
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           required
           value={lastName}
-          onChange={(e) => validateName(e.target.value) && setLastName(e.target.value)}
+          onChange={(e) =>
+            validateName(e.target.value) && setLastName(e.target.value)
+          }
         />
       </div>
 
@@ -127,6 +142,7 @@ export default function AddAboutMe({ onClose }) {
           placeholder="Email"
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           required
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
@@ -143,12 +159,14 @@ export default function AddAboutMe({ onClose }) {
         <input
           type="text"
           placeholder="LinkedIn URL"
+          value={linkedinUrl}
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           onChange={(e) => setLinkedinUrl(e.target.value)}
         />
         <input
           type="text"
           placeholder="GitHub URL"
+          value={githubUrl}
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           onChange={(e) => setGithubUrl(e.target.value)}
         />
@@ -159,6 +177,7 @@ export default function AddAboutMe({ onClose }) {
         placeholder="Address"
         className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
         required
+        value={address}
         onChange={(e) => setAddress(e.target.value)}
       />
 
@@ -189,4 +208,3 @@ export default function AddAboutMe({ onClose }) {
     </form>
   );
 }
-
