@@ -59,7 +59,7 @@ export default function JobList() {
     if (window.confirm('Are you sure you want to delete this job?')) {
       try {
         const source = createCancelToken();
-        await axios.delete(http://localhost:5000/api/jobs/delete/${jobId}, {
+        await axios.delete(`http://localhost:5000/api/jobs/delete/${jobId}`, {
           withCredentials: true,
           cancelToken: source.token
         });
@@ -98,7 +98,7 @@ export default function JobList() {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(80);
-    doc.text(Generated on: ${new Date().toLocaleString()}, margin, 70);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, 70);
   
     // Table data
     const headers = [['Title', 'Company', 'Location', 'Type', 'Status', 'Deadline', 'Positions']];
@@ -109,7 +109,7 @@ export default function JobList() {
       job.jobType || 'N/A',
       job.status,
       job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString() : 'No deadline',
-      ${job.positionsFilled || 0}/${job.numberOfPositions}
+      `${job.positionsFilled || 0}/${job.numberOfPositions}`
     ]);
   
     // AutoTable
@@ -136,7 +136,7 @@ export default function JobList() {
         const pageCount = doc.internal.getNumberOfPages();
         doc.setFontSize(10);
         doc.setTextColor(150);
-        doc.text(Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}, pageWidth - margin, doc.internal.pageSize.getHeight() - 20, { align: 'right' });
+        doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, pageWidth - margin, doc.internal.pageSize.getHeight() - 20, { align: 'right' });
       },
     });
   
@@ -287,10 +287,13 @@ export default function JobList() {
         <div ref={reportRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredJobs.map((job) => (
             <div key={job._id} className="bg-white rounded-lg shadow overflow-hidden flex flex-col">
+              {/* Card Header */}
               <div className="p-4 bg-gradient-to-r from-indigo-500 to-indigo-600">
                 <div className="flex justify-between items-start">
                   <h3 className="text-lg font-bold text-white truncate">{job.title}</h3>
-                  <span className={px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status)}}>
+                  <span
+                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status)}`}
+                  >
                     {job.status}
                   </span>
                 </div>
@@ -298,6 +301,7 @@ export default function JobList() {
                   {job.company?.name || 'No company assigned'}
                 </div>
               </div>
+              {/* Card Body */}
               <div className="p-4 flex-grow">
                 <div className="space-y-2">
                   <div className="flex items-center text-sm">
@@ -311,18 +315,24 @@ export default function JobList() {
                   <div className="flex items-center text-sm">
                     <FaRegCalendarAlt className="mr-2 text-gray-500" />
                     <span className="text-gray-600">
-                      {job.applicationDeadline 
-                        ? new Date(job.applicationDeadline).toLocaleDateString() 
+                      {job.applicationDeadline
+                        ? new Date(job.applicationDeadline).toLocaleDateString()
                         : 'No deadline'}
                     </span>
                   </div>
                 </div>
-                <div className="px-4 py-3 border-t border-gray-200">
+                <div className="px-4 py-3 border-t border-gray-200 mt-4">
                   <div className="flex items-center justify-between text-sm">
                     <div className="text-gray-700">
                       <strong>Positions:</strong> {job.positionsFilled || 0}/{job.numberOfPositions}
                     </div>
-                    <div className={px-2 py-1 rounded-full text-xs font-medium ${job.positionsFilled >= job.numberOfPositions ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-700'}}>
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        job.positionsFilled >= job.numberOfPositions
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-green-100 text-green-700'
+                      }`}
+                    >
                       {job.positionsFilled >= job.numberOfPositions ? 'Filled' : 'Open'}
                     </div>
                   </div>
@@ -331,16 +341,17 @@ export default function JobList() {
                   {job.description || 'No description provided.'}
                 </div>
               </div>
+              {/* Card Footer */}
               <div className="px-4 py-3 bg-gray-50 flex justify-end space-x-3 border-t">
-                <Link 
-                  to={/admin/jobs/edit/${job._id}} 
+                <Link
+                  to={`/admin/jobs/edit/${job._id}`}
                   className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-full transition-colors"
                   title="Edit Job"
                 >
                   <FaEdit className="h-5 w-5" />
                 </Link>
-                <button 
-                  onClick={() => handleDeleteJob(job._id)} 
+                <button
+                  onClick={() => handleDeleteJob(job._id)}
                   className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors"
                   title="Delete Job"
                 >
