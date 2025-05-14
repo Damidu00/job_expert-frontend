@@ -6,7 +6,7 @@ import HomePage from "./pages/home/homepage";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import LoginPage from "./Components/LoginPage";
 import SignupPage from "./Components/SignupPage";
-import Dashboard from "./pages/home/CV/Dashboard";
+import Dashboard from "./pages/home/CV/dashboard";
 import UserJobsPage from "./pages/home/jobs/UserJobsPage";
 import JobDetail from "./pages/home/jobs/JobDetail";
 import './index.css'
@@ -25,7 +25,13 @@ import Cv00 from "./pages/home/CV/templates/cv00";
 import Cv01 from "./pages/home/CV/templates/cv01";
 import Cv02 from "./pages/home/CV/templates/cv02";
 import Profile from './Components/profile';
+
+import CV4 from "./pages/home/CV/templates/Cv004";
+import Cv005 from "./pages/home/CV/templates/Cv005";
+import Cv006 from "./pages/home/CV/templates/Cv006";
+=======
 import UserDetails from "./pages/admin/userDetails";
+
 
 function App() {
   return (
@@ -124,7 +130,16 @@ function App() {
             }
           />
           <Route
-            path="/addcvdetails"
+            path="/addcvdetails/:id?"
+            element={
+              <ProtectedRoute>
+                <AddCVDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/addcvdetails/:id"
             element={
               <ProtectedRoute>
                 <AddCVDetails />
@@ -156,9 +171,33 @@ function App() {
             }
           />
           <Route
+            path="/viewtemplate/cv04"
+            element={
+              <ProtectedRoute>
+                <CV4 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/viewtemplate/cv05"
+            element={
+              <ProtectedRoute>
+                <Cv005 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/viewtemplate/cv06"
+            element={
+              <ProtectedRoute>
+                <Cv006 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/cvdashboard"
             element={
-              <ProtectedRoute allowedRoles={['user']}>
+              <ProtectedRoute allowedRoles={["user"]}>
                 <Dashboard />
               </ProtectedRoute>
             }

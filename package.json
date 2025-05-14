@@ -17,9 +17,13 @@
     "@react-pdf/renderer": "^4.3.0",
     "@supabase/supabase-js": "^2.49.4",
     "axios": "^1.8.1",
-    "html2canvas": "^1.4.1",
+
     "jspdf": "^3.0.1",
+
+    "lucide-react": "^0.510.0",
+
     "jspdf-autotable": "^5.0.2",
+
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
