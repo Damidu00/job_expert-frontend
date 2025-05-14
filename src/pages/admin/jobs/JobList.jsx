@@ -83,7 +83,7 @@ export default function JobList() {
     setFilters({ status: '', jobType: '' });
     setSearchTerm('');
   };
-
+//----Report generation part----
   const generateReport = () => {
     const doc = new jsPDF('p', 'pt', 'a4');
     const margin = 40;
