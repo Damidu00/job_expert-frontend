@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
+import fileUploadForSupaBase from "../../../utils/mediaUpload";
 
 export default function AddAboutMe({ onClose }) {
   const location = useLocation();
@@ -18,7 +19,8 @@ export default function AddAboutMe({ onClose }) {
   const [githubUrl, setGithubUrl] = useState("");
   const [address, setAddress] = useState("");
   const [bio, setBio] = useState("");
-  const [image, setImage] = useState(null);
+  // const [image, setImage] = useState(null);
+  const [imageFiles,setImageFiles] = useState([])
 
   const validateName = (value) => /^[a-zA-Z\s]+$/.test(value); 
   const validatePhoneNumber = (value) => /^[0-9]{10,}$/.test(value);
@@ -27,6 +29,19 @@ export default function AddAboutMe({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const promisesArray = []
+        
+        for(let i=0; i<imageFiles.length; i++){
+            promisesArray[i] = fileUploadForSupaBase(imageFiles[i])    
+        }
+        
+        const imgUrls = await Promise.all(promisesArray)
+        const profilePhotoURL = imgUrls[0]
+        console.log(profilePhotoURL)
+
+
+    
 
     if (!validateName(firstName) || !validateName(lastName)) {
       return toast.error("First and Last Name must contain only alphabets.");
@@ -43,15 +58,15 @@ export default function AddAboutMe({ onClose }) {
     if (githubUrl && !validateUrl(githubUrl)) {
       return toast.error("Invalid GitHub URL.");
     }
-    if (image) {
-      const fileTypes = ["image/jpeg", "image/png", "image/jpg"];
-      if (!fileTypes.includes(image.type)) {
-        return toast.error("Profile photo must be a JPG or PNG file.");
-      }
-      if (image.size > 2 * 1024 * 1024) {
-        return toast.error("Profile photo must be under 2MB.");
-      }
-    }
+    // if (image) {
+    //   const fileTypes = ["image/jpeg", "image/png", "image/jpg"];
+    //   if (!fileTypes.includes(image.type)) {
+    //     return toast.error("Profile photo must be a JPG or PNG file.");
+    //   }
+    //   if (image.size > 2 * 1024 * 1024) {
+    //     return toast.error("Profile photo must be under 2MB.");
+    //   }
+    // }
 
     const details = {
       userId,
@@ -64,16 +79,20 @@ export default function AddAboutMe({ onClose }) {
       githubURL: githubUrl,
       Address: address,
       shortBio: bio,
+      profilePhoto : profilePhotoURL
     };
 
     try {
       await axios.post(import.meta.env.VITE_BACKEND_URL + `/api/cvuser/`, details)
         .then((res) => {
           onClose();
+          console.log(res.data)
           toast.success("Your Details Added")
         })
         .catch(() => {
+          console.log(res.data)
           toast.error("Error adding user details.");
+          
         });
     } catch (error) {
       console.error(error);
@@ -156,7 +175,7 @@ export default function AddAboutMe({ onClose }) {
         type="file"
         className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
         accept="image/png, image/jpeg, image/jpg"
-        onChange={(e) => setImage(e.target.files[0])}
+        onChange={(e) => setImageFiles(e.target.files)}
       />
 
       <div className="flex justify-end space-x-4">
