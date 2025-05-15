@@ -158,7 +158,7 @@ const Profile = () => {
       </div>
 
       {/* Applied Jobs Section */}
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8 my-5">
+      {/* <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8 my-5">
         <h1 className="font-bold text-lg mb-4">Applied Jobs</h1>
         <table className="w-full text-left">
           <thead>
@@ -169,9 +169,9 @@ const Profile = () => {
               <th className="px-4 py-2">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody> */}
             {/* Mock Applied Jobs Data */}
-            <tr className="border-b border-gray-200">
+            {/* <tr className="border-b border-gray-200">
               <td className="px-4 py-2">17-07-2024</td>
               <td className="px-4 py-2">Frontend Developer</td>
               <td className="px-4 py-2">Google</td>
@@ -180,8 +180,8 @@ const Profile = () => {
                   Selected
                 </span>
               </td>
-            </tr>
-            <tr className="border-b border-gray-200">
+            </tr> */}
+            {/* <tr className="border-b border-gray-200">
               <td className="px-4 py-2">17-07-2024</td>
               <td className="px-4 py-2">Full Stack Developer</td>
               <td className="px-4 py-2">Microsoft</td>
@@ -193,7 +193,7 @@ const Profile = () => {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       {/* Update Profile Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
