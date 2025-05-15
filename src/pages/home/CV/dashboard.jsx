@@ -4,7 +4,6 @@ import { CiSquarePlus } from "react-icons/ci";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../../Components/Navbar";
 import { User } from "lucide-react";
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
