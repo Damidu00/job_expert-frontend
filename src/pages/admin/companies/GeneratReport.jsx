@@ -1,11 +1,13 @@
 const generateReport = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text("Company Report", 14, 20); // Title
+    doc.text("Company Report", 14, 20); // Title of report
   
+    //Title of table 
     const tableColumn = ["Name", "Industry", "Location", "Email", "Phone", "Website"];
     const tableRows = [];
   
+    //filtering companies details 
     filteredCompanies.forEach(company => {
       const row = [
         company.name || "N/A",
@@ -17,7 +19,7 @@ const generateReport = () => {
       ];
       tableRows.push(row);
     });
-  
+    //auto table ...
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,

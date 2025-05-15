@@ -150,7 +150,7 @@ export default function CompanyList() {
     
     return searchMatch && industryMatch;
   });
-
+   //genarate company reprot ....
   const generateCompanyReport = () => {
     try {
       // Check if we have companies to report
@@ -171,7 +171,7 @@ export default function CompanyList() {
       doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 25);
       doc.text(`Total Companies: ${filteredCompanies.length}`, 15, 30);
 
-      // Prepare table data
+      // Prepare table details
       const tableData = filteredCompanies.map(company => [
         company?.name || 'N/A',
         company?.industry || 'N/A',

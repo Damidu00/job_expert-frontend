@@ -41,6 +41,7 @@ export default function AddCompany() {
         withCredentials: true
       });
       
+      //toast massage .....
       toast.success('Company added successfully!');
       navigate('/admin/companies');
     } catch (error) {
